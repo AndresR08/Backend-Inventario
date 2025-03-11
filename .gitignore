@@ -1,7 +1,17 @@
+
+# Node modules y dependencias
 node_modules/
+package-lock.json
+
+# Archivos de entorno
 .env
+
+# Logs y cachés
+logs/
+*.log
+npm-debug.log*
+
+# Archivos del sistema
 .DS_Store
 
-node_modules/
-.env
-.DS_Store
+>>>>>>> a5766e8 (Guardando cambios locales antes del pull)

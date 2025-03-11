@@ -16,13 +16,21 @@ router.get("/", async (req, res) => {
 // Crear un producto (solo admin)
 router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
+    const { name, price, stock, category } = req.body;
+
+    if (!name || !price || !stock || !category) {
+      return res.status(400).json({ error: "Faltan campos" });
+    }
+
+    const newProduct = new Product({ name, price, stock, category });
     await newProduct.save();
+
     res.status(201).json(newProduct);
   } catch (error) {
-    res.status(400).json({ message: "Error al crear producto", error });
+    res.status(500).json({ error: error.message });
   }
 });
+
 
 // Editar un producto (solo admin)
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {

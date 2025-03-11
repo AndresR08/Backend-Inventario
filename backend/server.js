@@ -2,23 +2,22 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const productRoutes = require("./routes/productRoutes");
-const saleRoutes = require("./routes/saleRoutes");
-const userRoutes = require("./routes/userRoutes");
-const authRoutes = require("./routes/authRoutes");
-
+const path = require("path");
+const productRoutes = require("./src/routes/productRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const authRoutes = require("./src/routes/authRoutes");
 dotenv.config();
 const app = express();
 
-app.use(express.json());
 app.use(cors());
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB conectado"))
-.catch(err => console.error("Error conectando a MongoDB:", err));
+const saleRoutes = require("./src/routes/saleRoutes");
+app.use(express.json());
+app.use("/api/sales", saleRoutes);
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB conectado"))
+  .catch(err => console.error("Error conectando a MongoDB:", err));
 
 app.use("/api/products", productRoutes);
 app.use("/api/sales", saleRoutes);

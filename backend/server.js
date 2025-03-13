@@ -18,8 +18,10 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras permitidas
 };
 
-app.use(cors(corsOptions)); // Usamos las opciones de CORS
 
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));// Configurar CORS para permitir cualquier origen temporalmente
+
+app.use(cors(corsOptions)); // Usamos las opciones de CORS
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes
 
 // Conectar a MongoDB

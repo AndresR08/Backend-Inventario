@@ -143,26 +143,34 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
 // Ruta para obtener estadísticas de ventas
 router.get("/stats", authMiddleware, async (req, res) => {
   try {
-    const totalSales = await Sale.countDocuments(); // Total de ventas realizadas
+    // Contar el total de ventas
+    const totalSales = await Sale.countDocuments(); 
+    
+    // Sumar el total de ingresos de todas las ventas
     const totalIncome = await Sale.aggregate([
       { $group: { _id: null, total: { $sum: "$total" } } }
-    ]); // Suma total de ingresos
+    ]);
+
+    // Obtener la cantidad total de productos vendidos
     const totalProductsSold = await Sale.aggregate([
       { $group: { _id: "$product", total: { $sum: "$quantity" } } }
-    ]); // Productos vendidos (cantidad por producto)
+    ]);
 
     // Sumar la cantidad total de productos vendidos
     const totalQuantitySold = totalProductsSold.reduce((acc, product) => acc + product.total, 0);
 
+    // Enviar la respuesta con los resultados
     res.json({
       totalSales,
       totalIncome: totalIncome[0]?.total || 0,
       totalProductsSold: totalQuantitySold
     });
   } catch (error) {
+    console.error("Error al obtener estadísticas:", error);
     res.status(500).json({ message: error.message });
   }
 });
+
 
 
 module.exports = router;

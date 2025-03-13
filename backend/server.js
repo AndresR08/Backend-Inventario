@@ -13,28 +13,15 @@ const app = express();
 
 const cors = require("cors");
 
-const allowedOrigins = [
-  "https://mellifluous-begonia-f48751.netlify.app", 
-  "http://localhost:3000"
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, origin); // Permitir origen dinámico
-    } else {
-      callback(new Error("CORS bloqueado"));
-    }
-  },
+  origin: "*", // Permitir cualquier origen temporalmente
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
-  credentials: true,
+  credentials: true
 }));
 
-// Middleware para forzar el encabezado CORS
 app.use((req, res, next) => {
-  const origin = allowedOrigins.includes(req.headers.origin) ? req.headers.origin : "";
-  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -45,7 +32,6 @@ app.use((req, res, next) => {
   
   next();
 });
-
 
 // Middleware para forzar HTTPS en producción
 if (process.env.NODE_ENV === "production") {

@@ -1,3 +1,5 @@
+// SaleRoutes.js
+
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
@@ -13,8 +15,13 @@ router.get("/", authMiddleware, async (req, res) => {
       filter.user = req.user.id;
     }
 
-    const sales = await Sale.find(filter).populate("product").populate("user", "name email");
-    res.json(sales);
+    // Agregar populate para asegurar que se traigan los detalles de producto y usuario
+    const sales = await Sale.find(filter)
+      .populate("product", "name") // Traemos solo el nombre del producto
+      .populate("user", "name") // Traemos solo el nombre del usuario (vendedor)
+      .exec(); // Aseguramos que ejecute la consulta correctamente
+
+    res.json(sales); // Devolvemos las ventas con los detalles necesarios
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -134,4 +141,3 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-

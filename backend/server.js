@@ -11,13 +11,13 @@ dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-// 🔥 Configuración mejorada de CORS
+// 🔥 CORS CONFIG (Asegura que solo Netlify pueda acceder en producción)
 const allowedOrigins = [
   "https://mellifluous-begonia-f48751.netlify.app", 
   "http://localhost:3000" // Para pruebas locales
 ];
 
-const corsOptions = {
+app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -28,17 +28,23 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // Permitir cookies y headers de autenticación
-};
-
-app.use(cors(corsOptions));
+}));
 
 // Middleware para asegurarse de que las credenciales se envían bien
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", allowedOrigins.includes(req.headers.origin) ? req.headers.origin : "");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
   next();
 });
 
-// Middleware para forzar HTTPS en producción (opcional)
+// Middleware para forzar HTTPS en producción
 if (process.env.NODE_ENV === "production") {
   app.use((req, res, next) => {
     if (req.headers["x-forwarded-proto"] !== "https") {
@@ -73,4 +79,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
-

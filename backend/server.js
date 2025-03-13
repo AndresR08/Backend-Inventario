@@ -6,15 +6,13 @@ const productRoutes = require("./src/routes/productRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const saleRoutes = require("./src/routes/saleRoutes");
+const config = require("./config");  // Importamos la configuración
 
 dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-const allowedOrigins = [
-  "http://localhost:5173",  // Permitir pruebas en local
-  "https://mellifluous-begonia-f48751.netlify.app", // Permitir Netlify
-];
+const allowedOrigins = config.allowedOrigins;  // Usamos las origins definidas en config.js
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -46,7 +44,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Middleware para forzar HTTPS en producción
 if (process.env.NODE_ENV === "production") {
   app.use((req, res, next) => {
@@ -61,7 +58,7 @@ app.use(express.json()); // Para parsear el cuerpo de las solicitudes
 
 // Conectar a MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {
+  .connect(config.mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -78,7 +75,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 
 // Configurar el puerto de la aplicación
-const PORT = process.env.PORT || 5000;
+const PORT = config.port;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });

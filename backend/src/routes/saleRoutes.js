@@ -151,14 +151,18 @@ router.get("/stats", authMiddleware, async (req, res) => {
       { $group: { _id: "$product", total: { $sum: "$quantity" } } }
     ]); // Productos vendidos (cantidad por producto)
 
+    // Sumar la cantidad total de productos vendidos
+    const totalQuantitySold = totalProductsSold.reduce((acc, product) => acc + product.total, 0);
+
     res.json({
       totalSales,
       totalIncome: totalIncome[0]?.total || 0,
-      totalProductsSold
+      totalProductsSold: totalQuantitySold
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 
 module.exports = router;

@@ -1,5 +1,3 @@
-// SaleRoutes.js
-
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
@@ -170,7 +168,5 @@ router.get("/stats", authMiddleware, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
-
 
 module.exports = router;

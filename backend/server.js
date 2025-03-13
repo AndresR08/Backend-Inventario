@@ -78,7 +78,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 
 // Configurar el puerto de la aplicación
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });

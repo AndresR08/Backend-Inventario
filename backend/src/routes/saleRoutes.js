@@ -140,4 +140,25 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
+// Ruta para obtener estadísticas de ventas
+router.get("/stats", authMiddleware, async (req, res) => {
+  try {
+    const totalSales = await Sale.countDocuments(); // Total de ventas realizadas
+    const totalIncome = await Sale.aggregate([
+      { $group: { _id: null, total: { $sum: "$total" } } }
+    ]); // Suma total de ingresos
+    const totalProductsSold = await Sale.aggregate([
+      { $group: { _id: "$product", total: { $sum: "$quantity" } } }
+    ]); // Productos vendidos (cantidad por producto)
+
+    res.json({
+      totalSales,
+      totalIncome: totalIncome[0]?.total || 0,
+      totalProductsSold
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

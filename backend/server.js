@@ -11,31 +11,25 @@ dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-// Configurar CORS solo para Netlify
-const allowedOrigins = ["https://mellifluous-begonia-f48751.netlify.app"];
+// Configurar CORS para permitir solo Netlify
+const allowedOrigin = "https://mellifluous-begonia-f48751.netlify.app";
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: allowedOrigin,
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
   credentials: true
 }));
 
-// Middleware para manejar CORS manualmente
+// Middleware para configurar manualmente los headers de CORS
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://mellifluous-begonia-f48751.netlify.app");
+  res.header("Access-Control-Allow-Origin", allowedOrigin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
+    return res.sendStatus(204);
   }
 
   next();

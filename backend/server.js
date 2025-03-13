@@ -11,19 +11,30 @@ dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-// Configurar CORS para permitir solo Netlify
-const allowedOrigin = "https://mellifluous-begonia-f48751.netlify.app";
+const allowedOrigins = [
+  "http://localhost:5173",  // Permitir pruebas en local
+  "https://mellifluous-begonia-f48751.netlify.app", // Permitir Netlify
+];
 
 app.use(cors({
-  origin: allowedOrigin,
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No permitido por CORS"));
+    }
+  },
   methods: "GET,POST,PUT,DELETE",
   allowedHeaders: "Content-Type,Authorization",
-  credentials: true
+  credentials: true,
 }));
 
 // Middleware para configurar manualmente los headers de CORS
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", allowedOrigin);
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -34,6 +45,7 @@ app.use((req, res, next) => {
 
   next();
 });
+
 
 // Middleware para forzar HTTPS en producción
 if (process.env.NODE_ENV === "production") {

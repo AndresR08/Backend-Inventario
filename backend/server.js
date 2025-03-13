@@ -11,15 +11,42 @@ dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-// Configuración de CORS correcta
+// 🔥 Configuración mejorada de CORS
+const allowedOrigins = [
+  "https://mellifluous-begonia-f48751.netlify.app", 
+  "http://localhost:3000" // Para pruebas locales
+];
+
 const corsOptions = {
-  origin: "https://mellifluous-begonia-f48751.netlify.app", // URL de tu frontend
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No permitido por CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // Permitir cookies y headers de autenticación
 };
 
-app.use(cors(corsOptions)); // Usamos SOLO estas opciones de CORS
+app.use(cors(corsOptions));
+
+// Middleware para asegurarse de que las credenciales se envían bien
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
+// Middleware para forzar HTTPS en producción (opcional)
+if (process.env.NODE_ENV === "production") {
+  app.use((req, res, next) => {
+    if (req.headers["x-forwarded-proto"] !== "https") {
+      return res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes
 

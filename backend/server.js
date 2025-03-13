@@ -11,17 +11,16 @@ dotenv.config(); // Cargar variables de entorno antes de usarlas
 
 const app = express();
 
-// Configuración de CORS
+// Configuración de CORS correcta
 const corsOptions = {
-  origin: 'https://mellifluous-begonia-f48751.netlify.app', // URL de tu frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras permitidas
+  origin: "https://mellifluous-begonia-f48751.netlify.app", // URL de tu frontend
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // Permitir cookies y headers de autenticación
 };
 
+app.use(cors(corsOptions)); // Usamos SOLO estas opciones de CORS
 
-app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));// Configurar CORS para permitir cualquier origen temporalmente
-
-app.use(cors(corsOptions)); // Usamos las opciones de CORS
 app.use(express.json()); // Para parsear el cuerpo de las solicitudes
 
 // Conectar a MongoDB

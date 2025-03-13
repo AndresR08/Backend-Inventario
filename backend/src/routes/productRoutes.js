@@ -31,7 +31,6 @@ router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-
 // Editar un producto (solo admin)
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
@@ -53,4 +52,3 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-

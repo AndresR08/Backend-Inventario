@@ -10,7 +10,6 @@ const {
 const { authMiddleware } = require("../middlewares/auth");
 const { adminMiddleware } = require("../middlewares/auth");
 
-
 const router = express.Router();
 
 router.post("/", authMiddleware, adminMiddleware, createUser);

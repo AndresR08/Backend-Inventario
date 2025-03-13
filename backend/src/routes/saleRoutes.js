@@ -10,10 +10,9 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     let filter = {};
     if (req.user.role !== "admin") {
-      filter.user = req.user.id;
+      filter.user = req.user.id; // Solo puede ver sus propias ventas si no es admin
     }
 
-    // Agregar populate para asegurar que se traigan los detalles de producto y usuario
     const sales = await Sale.find(filter)
       .populate("product", "name") // Traemos solo el nombre del producto
       .populate("user", "name") // Traemos solo el nombre del usuario (vendedor)
@@ -45,7 +44,6 @@ router.get("/user/:userId", authMiddleware, async (req, res) => {
 // POST: Crear una venta (Guarda el usuario que la hizo)
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    console.log("Body recibido:", req.body);
     const { productId, quantity } = req.body;
     const userId = req.user.id; // Tomamos el usuario desde el token
 
@@ -141,8 +139,7 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
 // Ruta para obtener estadísticas de ventas
 router.get("/stats", authMiddleware, async (req, res) => {
   try {
-    // Contar el total de ventas
-    const totalSales = await Sale.countDocuments(); 
+    const totalSales = await Sale.countDocuments(); // Contamos las ventas totales
     
     // Sumar el total de ingresos de todas las ventas
     const totalIncome = await Sale.aggregate([

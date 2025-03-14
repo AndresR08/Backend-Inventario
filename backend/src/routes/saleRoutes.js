@@ -172,5 +172,6 @@ router.get("/prueba", (req, res) => {
   res.json({ mensaje: "Prueba OK" });
 });
 
+console.log("✅ saleRoutes.js cargado correctamente");
 
 module.exports = router;

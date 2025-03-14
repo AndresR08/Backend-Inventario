@@ -85,6 +85,13 @@ app._router.stack.forEach((r) => {
 
 // Configurar el puerto de la aplicación
 const PORT = config.port;
+console.log("📌 Rutas cargadas en Express:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`➡️ ${Object.keys(r.route.methods).join(", ").toUpperCase()} ${r.route.path}`);
+  }
+});
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });

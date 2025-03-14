@@ -6,7 +6,7 @@ const productRoutes = require("./src/routes/productRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const saleRoutes = require("./src/routes/saleRoutes");
-const config = require("./config");  // Importamos la configuración
+const config = require("./config");  
 
 dotenv.config(); // Cargar variables de entorno antes de usarlas
 
@@ -74,8 +74,18 @@ app.use("/api/sales", saleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 
+// Mostrar las rutas cargadas en Express
+console.log("📌 Rutas cargadas en Express:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`➡️  ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
+  }
+});
+
 // Configurar el puerto de la aplicación
 const PORT = config.port;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
+
+

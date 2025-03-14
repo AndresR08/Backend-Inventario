@@ -138,6 +138,7 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
 
 // Ruta para obtener estadísticas de ventas
 router.get("/stats", authMiddleware, async (req, res) => {
+  console.log("📊 Ruta /api/sales/stats fue llamada");
   try {
     // Contar el total de ventas
     const totalSales = await Sale.countDocuments();

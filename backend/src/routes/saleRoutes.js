@@ -1,3 +1,4 @@
+// ./src/routes/saleRoutes.js
 const express = require("express");
 const mongoose = require("mongoose");
 const router = express.Router();
@@ -10,30 +11,27 @@ router.get("/", authMiddleware, async (req, res) => {
   try {
     let filter = {};
     if (req.user.role !== "admin") {
-      filter.user = req.user.id; // Solo puede ver sus propias ventas si no es admin
+      filter.user = req.user.id;
     }
 
     const sales = await Sale.find(filter)
-      .populate("product", "name") // Traemos solo el nombre del producto
-      .populate("user", "name") // Traemos solo el nombre del usuario (vendedor)
-      .exec(); // Aseguramos que ejecute la consulta correctamente
+      .populate("product", "name")
+      .populate("user", "name")
+      .exec();
 
-    res.json(sales); // Devolvemos las ventas con los detalles necesarios
+    res.json(sales);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// GET: Historial de ventas por usuario específico (Solo admins pueden ver ventas de otros)
+// GET: Historial de ventas por usuario (solo admins pueden ver ventas de otros)
 router.get("/user/:userId", authMiddleware, async (req, res) => {
   try {
     const userId = req.params.userId;
-
-    // Si no es admin, solo puede ver su propio historial
     if (req.user.role !== "admin" && req.user.id !== userId) {
       return res.status(403).json({ error: "No tienes permiso para ver estas ventas" });
     }
-
     const sales = await Sale.find({ user: userId }).populate("product");
     res.json(sales);
   } catch (error) {
@@ -45,12 +43,11 @@ router.get("/user/:userId", authMiddleware, async (req, res) => {
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { productId, quantity } = req.body;
-    const userId = req.user.id; // Tomamos el usuario desde el token
+    const userId = req.user.id;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({ error: "ID de producto inválido" });
     }
-
     if (!productId || !quantity) {
       return res.status(400).json({ error: "Faltan campos" });
     }
@@ -59,26 +56,30 @@ router.post("/", authMiddleware, async (req, res) => {
     if (!productData) {
       return res.status(404).json({ error: "Producto no encontrado" });
     }
-
     if (productData.stock < quantity) {
       return res.status(400).json({ error: "Stock insuficiente" });
     }
 
     const total = productData.price * quantity;
     const newSale = new Sale({ product: productId, quantity, total, user: userId });
-
     await newSale.save();
+
     productData.stock -= quantity;
     await productData.save();
 
+    // Si el stock cae por debajo del mínimo, se puede notificar
+    if (productData.stock < productData.stockMin) {
+      console.warn(`Alerta: el producto "${productData.name}" está por debajo del stock mínimo.`);
+    }
+
     res.status(201).json(newSale);
   } catch (error) {
-    console.error("🔥 Error en el servidor:", error);
+    console.error("Error en el servidor:", error);
     res.status(500).json({ message: error.message });
   }
 });
 
-// PUT: Editar una venta (Solo admins)
+// PUT: Editar una venta (solo admins)
 router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id);
@@ -96,12 +97,11 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Producto no encontrado" });
     }
 
-    // Restaurar stock anterior y descontar el nuevo
+    // Restaurar stock anterior y actualizar con la nueva cantidad
     productData.stock += sale.quantity;
     if (productData.stock < quantity) {
       return res.status(400).json({ error: "Stock insuficiente" });
     }
-
     productData.stock -= quantity;
     await productData.save();
 
@@ -115,34 +115,48 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// Ruta para obtener estadísticas de ventas
-router.get("/sales/stats", authMiddleware, async (req, res) => {
+// DELETE: Eliminar una venta (solo admins)
+router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const totalSales = await Sale.countDocuments(); // Cantidad total de ventas
-    
-    // Sumar el total de ingresos de todas las ventas
-    const totalIncomeResult = await Sale.aggregate([
-      { $group: { _id: null, total: { $sum: "$total" } } }
-    ]);
-    const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].total : 0;
+    const sale = await Sale.findById(req.params.id);
+    if (!sale) {
+      return res.status(404).json({ error: "Venta no encontrada" });
+    }
 
-    // Sumar la cantidad total de productos vendidos
-    const totalProductsSoldResult = await Sale.aggregate([
-      { $group: { _id: null, total: { $sum: "$quantity" } } }
-    ]);
-    const totalProductsSold = totalProductsSoldResult.length > 0 ? totalProductsSoldResult[0].total : 0;
+    const productData = await Product.findById(sale.product);
+    if (productData) {
+      productData.stock += sale.quantity;
+      await productData.save();
+    }
 
-    res.json({
-      totalSales,
-      totalIncome,
-      totalProductsSold
-    });
+    await Sale.findByIdAndDelete(req.params.id);
+    res.json({ message: "Venta eliminada y stock repuesto" });
   } catch (error) {
-    console.error("Error al obtener estadísticas:", error);
-    res.status(500).json({ message: "Error al obtener estadísticas" });
+    res.status(500).json({ message: error.message });
   }
 });
 
+// Ruta para obtener estadísticas de ventas
+router.get("/stats", authMiddleware, async (req, res) => {
+  try {
+    const totalSales = await Sale.countDocuments();
+    const totalIncomeAgg = await Sale.aggregate([
+      { $group: { _id: null, total: { $sum: "$total" } } }
+    ]);
+    const totalProductsSoldAgg = await Sale.aggregate([
+      { $group: { _id: "$product", total: { $sum: "$quantity" } } }
+    ]);
+    const totalQuantitySold = totalProductsSoldAgg.reduce((acc, item) => acc + item.total, 0);
 
+    res.json({
+      totalSales,
+      totalIncome: totalIncomeAgg[0]?.total || 0,
+      totalProductsSold: totalQuantitySold
+    });
+  } catch (error) {
+    console.error("Error al obtener estadísticas:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;

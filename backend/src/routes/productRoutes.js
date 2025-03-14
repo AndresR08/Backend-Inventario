@@ -1,3 +1,4 @@
+// ./src/routes/productRoutes.js
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
@@ -16,13 +17,13 @@ router.get("/", async (req, res) => {
 // Crear un producto (solo admin)
 router.post("/", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const { name, price, stock, category } = req.body;
+    const { name, price, stock, category, stockMin, stockMax } = req.body;
 
-    if (!name || !price || !stock || !category) {
+    if (!name || !price || stock === undefined || !category) {
       return res.status(400).json({ error: "Faltan campos" });
     }
 
-    const newProduct = new Product({ name, price, stock, category });
+    const newProduct = new Product({ name, price, stock, category, stockMin, stockMax });
     await newProduct.save();
 
     res.status(201).json(newProduct);
@@ -48,6 +49,17 @@ router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
     res.json({ message: "Producto eliminado correctamente" });
   } catch (error) {
     res.status(400).json({ message: "Error al eliminar producto", error });
+  }
+});
+
+// Obtener productos con bajo stock
+router.get("/low-stock", authMiddleware, async (req, res) => {
+  try {
+    // Compara el stock actual con el stock mínimo
+    const lowStockProducts = await Product.find({ $expr: { $lt: ["$stock", "$stockMin"] } });
+    res.json(lowStockProducts);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener productos con bajo stock", error });
   }
 });
 

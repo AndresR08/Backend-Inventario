@@ -155,6 +155,32 @@ router.get("/stats", authMiddleware, async (req, res) => {
     // Sumar la cantidad total de productos vendidos
     const totalQuantitySold = totalProductsSoldAgg.reduce((acc, item) => acc + item.total, 0);
 
+    console.log("📊 Ruta /api/sales/stats fue llamada");
+    res.json({
+      totalSales,
+      totalIncome: totalIncomeAgg[0]?.total || 0,
+      totalProductsSold: totalQuantitySold
+    });
+  } catch (error) {
+    console.error("Error al obtener estadísticas:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+// Ruta para obtener estadísticas de ventas
+router.get("/stats", authMiddleware, async (req, res) => {
+  try {
+    const totalSales = await Sale.countDocuments();
+    
+    const totalIncomeAgg = await Sale.aggregate([
+      { $group: { _id: null, total: { $sum: "$total" } } }
+    ]);
+    
+    const totalProductsSoldAgg = await Sale.aggregate([
+      { $group: { _id: "$product", total: { $sum: "$quantity" } } }
+    ]);
+    
+    const totalQuantitySold = totalProductsSoldAgg.reduce((acc, item) => acc + item.total, 0);
+
     res.json({
       totalSales,
       totalIncome: totalIncomeAgg[0]?.total || 0,

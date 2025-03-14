@@ -167,4 +167,9 @@ router.get("/stats", authMiddleware, async (req, res) => {
 });
 
 
+router.get("/prueba", (req, res) => {
+  res.json({ mensaje: "Prueba OK" });
+});
+
+
 module.exports = router;

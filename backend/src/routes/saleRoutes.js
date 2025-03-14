@@ -115,55 +115,34 @@ router.put("/:id", authMiddleware, adminMiddleware, async (req, res) => {
   }
 });
 
-// DELETE: Eliminar una venta (Solo admins)
-router.delete("/:id", authMiddleware, adminMiddleware, async (req, res) => {
-  try {
-    const sale = await Sale.findById(req.params.id);
-    if (!sale) {
-      return res.status(404).json({ error: "Venta no encontrada" });
-    }
-
-    const productData = await Product.findById(sale.product);
-    if (productData) {
-      productData.stock += sale.quantity; // Reponer stock
-      await productData.save();
-    }
-
-    await Sale.findByIdAndDelete(req.params.id);
-    res.json({ message: "Venta eliminada y stock repuesto" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 // Ruta para obtener estadísticas de ventas
-router.get("/stats", authMiddleware, async (req, res) => {
+router.get("/sales/stats", authMiddleware, async (req, res) => {
   try {
-    const totalSales = await Sale.countDocuments(); // Contamos las ventas totales
+    const totalSales = await Sale.countDocuments(); // Cantidad total de ventas
     
     // Sumar el total de ingresos de todas las ventas
-    const totalIncome = await Sale.aggregate([
+    const totalIncomeResult = await Sale.aggregate([
       { $group: { _id: null, total: { $sum: "$total" } } }
     ]);
-
-    // Obtener la cantidad total de productos vendidos
-    const totalProductsSold = await Sale.aggregate([
-      { $group: { _id: "$product", total: { $sum: "$quantity" } } }
-    ]);
+    const totalIncome = totalIncomeResult.length > 0 ? totalIncomeResult[0].total : 0;
 
     // Sumar la cantidad total de productos vendidos
-    const totalQuantitySold = totalProductsSold.reduce((acc, product) => acc + product.total, 0);
+    const totalProductsSoldResult = await Sale.aggregate([
+      { $group: { _id: null, total: { $sum: "$quantity" } } }
+    ]);
+    const totalProductsSold = totalProductsSoldResult.length > 0 ? totalProductsSoldResult[0].total : 0;
 
-    // Enviar la respuesta con los resultados
     res.json({
       totalSales,
-      totalIncome: totalIncome[0]?.total || 0,
-      totalProductsSold: totalQuantitySold
+      totalIncome,
+      totalProductsSold
     });
   } catch (error) {
     console.error("Error al obtener estadísticas:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error al obtener estadísticas" });
   }
 });
+
+
 
 module.exports = router;

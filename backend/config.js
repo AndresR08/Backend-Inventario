@@ -1,5 +1,6 @@
-require("dotenv").config();
+require("dotenv").config({ path: __dirname + "/../.env" });
 console.log("MONGO_URI =", process.env.MONGO_URI);
+console.log("PORT =", process.env.PORT);
 
 const config = {
   mongoURI: process.env.MONGO_URI,

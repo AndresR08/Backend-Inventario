@@ -76,13 +76,6 @@ console.log("🔄 Cargando rutas de ventas...");
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 
-// Mostrar las rutas cargadas en Express
-console.log("📌 Rutas cargadas en Express:");
-app._router.stack.forEach((r) => {
-  if (r.route && r.route.path) {
-    console.log(`➡️  ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
-  }
-});
 
 // Configurar el puerto de la aplicación
 const PORT = config.port;
@@ -90,6 +83,14 @@ console.log("📌 Rutas cargadas en Express:");
 app._router.stack.forEach((r) => {
   if (r.route && r.route.path) {
     console.log(`➡️ ${Object.keys(r.route.methods).join(", ").toUpperCase()} ${r.route.path}`);
+  }
+});
+
+// Mostrar las rutas cargadas en Express
+console.log("📌 Rutas cargadas en Express:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`➡️  ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
   }
 });
 

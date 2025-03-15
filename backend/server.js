@@ -93,6 +93,9 @@ app._router.stack.forEach((route) => {
   }
 });
 
+const expressListRoutes = require("express-list-routes");
+expressListRoutes(app);
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);

@@ -72,6 +72,7 @@ mongoose
 app.use("/api/products", productRoutes);
 console.log("🔄 Cargando rutas de ventas...");
 app.use("/api/sales", saleRoutes);
+console.log("🔄 Cargando rutas de ventas...");
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 

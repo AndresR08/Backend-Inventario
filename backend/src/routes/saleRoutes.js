@@ -33,4 +33,7 @@ router.get("/stats", authMiddleware, async (req, res) => {
 // Nueva ruta para crear una venta
 router.post("/", authMiddleware, createSale);
 
+
+console.log("✅ saleRoutes.js cargado correctamente");
+
 module.exports = router;

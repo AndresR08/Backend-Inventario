@@ -1,5 +1,6 @@
 require("dotenv").config();
 console.log("MONGO_URI =", process.env.MONGO_URI);
+
 const config = {
   mongoURI: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,

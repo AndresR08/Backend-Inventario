@@ -54,6 +54,6 @@ app._router.stack.forEach((r) => {
 
 // Iniciar el servidor
 const PORT = config.port;
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(PORT,"0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });

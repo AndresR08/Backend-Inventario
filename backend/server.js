@@ -86,13 +86,13 @@ app._router.stack.forEach((r) => {
   }
 });
 
-// Mostrar las rutas cargadas en Express
-console.log("📌 Rutas cargadas en Express:");
-app._router.stack.forEach((r) => {
-  if (r.route && r.route.path) {
-    console.log(`➡️  ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
+
+app._router.stack.forEach((route) => {
+  if (route.route && route.route.path) {
+    console.log("📌 Ruta activa:", route.route.path);
   }
 });
+
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);

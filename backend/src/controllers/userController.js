@@ -10,15 +10,15 @@ const createUser = async (req, res) => {
       return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword, role });
-
+    const newUser = new User({ name, email, password, role }); // No se hace hash manual
     await newUser.save();
+
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Obtener todos los usuarios
 const getUsers = async (req, res) => {

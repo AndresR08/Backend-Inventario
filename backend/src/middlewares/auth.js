@@ -1,44 +1,18 @@
+// backend/src/middlewares/auth.js
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.header("Authorization");
-    
-    // Verificar si existe el encabezado Authorization y si está bien formateado
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "Acceso denegado. Token no proporcionado o mal formateado." });
-    }
-
-    const token = authHeader.split(" ")[1];
+const authMiddleware = async (req, res, next) => {
+    const token = req.cookies.token || req.header("Authorization")?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "Acceso denegado. Token no proporcionado." });
 
     try {
-        const verified = jwt.verify(token, process.env.JWT_SECRET);
-
-        // Verifica si el token tiene los datos esperados
-        if (!verified.id || !verified.role) {
-            return res.status(400).json({ message: "Token mal formado." });
-        }
-
-        req.user = { id: verified.id, role: verified.role }; 
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = await User.findById(decoded.id).select("-password");
         next();
     } catch (error) {
-        // Manejo de errores más específico
-        console.error("Error al verificar token:", error);
-
-        if (error.name === "TokenExpiredError") {
-            return res.status(403).json({ message: "Token expirado. Por favor, inicia sesión nuevamente." });
-        }
-
-        return res.status(403).json({ message: "Token inválido." });
+        return res.status(403).json({ message: "Token inválido o expirado." });
     }
 };
 
-// Middleware para verificar que el usuario es admin
-const adminMiddleware = (req, res, next) => {
-    if (req.user && req.user.role === "admin") {
-        next();
-    } else {
-        return res.status(403).json({ message: "No tienes permisos para realizar esta acción." });
-    }
-};
-
-module.exports = { authMiddleware, adminMiddleware };
+module.exports = { authMiddleware };

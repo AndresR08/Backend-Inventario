@@ -1,59 +1,38 @@
-// Importaciones principales
+// server.js - Configuracion del servidor principal
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
+const helmet = require("helmet");
+const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const config = require("./config");  
+const config = require("./config");
+const productRoutes = require("./routes/productRoutes");
+const saleRoutes = require("./routes/saleRoutes");
+const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
 
-// Importar rutas
-const productRoutes = require("./src/routes/productRoutes");
-const userRoutes = require("./src/routes/userRoutes");
-const authRoutes = require("./src/routes/authRoutes");
-const saleRoutes = require("./src/routes/saleRoutes"); // 📌 Asegurar que está aquí
-
-dotenv.config();  
 const app = express();
 
-console.log("🚀 Iniciando servidor...");
-
-// Middlewares
-app.use(cors());
+app.use(helmet());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
-// Conectar a MongoDB
-mongoose.connect(config.mongoURI)
-  .then(() => console.log("✅ MongoDB conectado"))
-  .catch((err) => {
-    console.error("❌ Error conectando a MongoDB:", err);
-    process.exit(1);
-  });
+mongoose.connect(config.mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => console.log("✅ MongoDB conectado"))
+  .catch((err) => console.error("❌ Error en MongoDB:", err));
 
-// 🔥 LOG de carga de rutas
-console.log("🔄 Cargando rutas...");
-
-// Rutas
 app.use("/api/products", productRoutes);
-console.log("📌 Rutas de productos cargadas");
-
 app.use("/api/sales", saleRoutes);
-console.log("📌 Rutas de ventas cargadas");
-
 app.use("/api/users", userRoutes);
-console.log("📌 Rutas de usuarios cargadas");
-
 app.use("/api/auth", authRoutes);
-console.log("📌 Rutas de autenticación cargadas");
 
-// 🚀 Ver todas las rutas activas
-console.log("📌 Rutas activas en Express:");
-app._router.stack.forEach((r) => {
-  if (r.route && r.route.path) {
-    console.log(`➡️ ${Object.keys(r.route.methods).join(", ").toUpperCase()} ${r.route.path}`);
-  }
+app.use((err, req, res, next) => {
+  console.error("❌ Error global:", err);
+  res.status(500).json({ message: "Error interno del servidor" });
 });
 
-// Iniciar el servidor
-const PORT = config.port;
-app.listen(PORT,"0.0.0.0", () => {
-  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
-});
+app.listen(config.port, () => console.log(`🚀 Servidor en puerto ${config.port}`));

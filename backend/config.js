@@ -1,15 +1,9 @@
-require("dotenv").config({ path: __dirname + "/../.env" });
-console.log("MONGO_URI =", process.env.MONGO_URI);
-console.log("PORT =", process.env.PORT);
+// config.js - Centraliza todas las variables de entorno
+require("dotenv").config();
 
-const config = {
+module.exports = {
   mongoURI: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
-  port: process.env.PORT || 5050,
-  allowedOrigins: [
-    "http://localhost:5173",
-    "https://mellifluous-begonia-f48751.netlify.app",
-  ],
+  refreshSecret: process.env.REFRESH_SECRET,
+  port: process.env.PORT || 5000,
 };
-
-module.exports = config;

@@ -4,6 +4,7 @@ const User = require("../models/User");
 
 const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token || req.header("Authorization")?.split(" ")[1];
+    console.log("Token recibido:", token);
     if (!token) return res.status(401).json({ message: "Acceso denegado. Token no proporcionado." });
 
     try {

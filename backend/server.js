@@ -8,11 +8,11 @@ const mongoose = require("mongoose");
 const config = require("./config");
 
 // Importar rutas
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const productRoutes = require("./routes/productRoutes");
-const saleRoutes = require("./routes/saleRoutes");
-const businessConfigRoutes = require("./routes/businessConfigRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const productRoutes = require("./src/routes/productRoutes");
+const saleRoutes = require("./src/routes/saleRoutes");
+const businessConfigRoutes = require("./src/routes/businessConfigRoutes");
 
 const app = express();
 

@@ -7,9 +7,6 @@ const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
 const config = require("./config");
 
-// Configurar CORS
-app.use(cors({ origin: "*" })); // Permite todas las conexiones
-
 // Importar rutas
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");

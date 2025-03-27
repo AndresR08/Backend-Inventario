@@ -6,7 +6,6 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
 const config = require("./config");
-const cors = require("cors");
 
 // Configurar CORS
 app.use(cors({ origin: "*" })); // Permite todas las conexiones
